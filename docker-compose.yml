@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   php-httpd: 
+    restart: always
     build:
       context: ./docker-config/php
       args:
@@ -11,9 +12,12 @@ services:
     volumes:
       - ./app:/var/www/
       - ./app/public:/var/www/html
+    depends_on: 
+      - mariadb
 
   mariadb:
     image: mariadb:10.5.2
+    restart: always
     volumes: 
       - ./data:/var/lib/mysql
     environment:
@@ -23,6 +27,20 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+  
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports: 
+      - ${PHPMA_PORT}:80
+    depends_on: 
+      - mariadb
+
+
   
 volumes:
   data:
