@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  php-httpd: 
+    build:
+      context: ./docker-config/php
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+    ports: 
+      - ${EXPOSED_PORT}:80
+    volumes:
+      - ./app:/var/www/
+      - ./app/public:/var/www/html
+
+  mariadb:
+    image: mariadb:10.5.2
+    volumes: 
+      - ./data:/var/lib/mysql
+    environment:
+      TZ: ${TZ}
+      MYSQL_ALLOW_EMPTY_PASSWORD: ${MYSQL_ALLOW_EMPTY_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+  
+volumes:
+  data:
+
+
