@@ -1,24 +1,36 @@
 version: '3.7'
 
 services:
-  php-httpd: 
-    restart: always
+  app:
     build:
-      context: ./docker-config/php
       args:
+        USER: ${USER}
+        UID: ${UID}
         PHP_VERSION: ${PHP_VERSION}
+      context: ./
+      dockerfile: ./docker-config/php/Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes: 
+    - ./app:/var/www
+    networks: 
+    - lemp-stack
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
     ports: 
-      - ${EXPOSED_PORT}:80
+      - $EXPOSED_PORT:80
     volumes:
-      - ./app:/var/www/
-      - ./app/public:/var/www/html
-    depends_on: 
-      - mariadb
+      - ./app:/var/www
+      - ./docker-config/nginx/default-conf:/etc/nginx/conf.d
+    networks:
+     - lemp-stack
 
   mariadb:
     image: mariadb:10.5.2
-    restart: always
-    volumes: 
+    restart: unless-stopped
+    volumes:  
       - ./data:/var/lib/mysql
     environment:
       TZ: ${TZ}
@@ -27,7 +39,9 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-  
+    networks: 
+      - lemp-stack
+
   phpmyadmin:
     image: phpmyadmin:latest
     restart: always
@@ -39,10 +53,12 @@ services:
       - ${PHPMA_PORT}:80
     depends_on: 
       - mariadb
+    networks: 
+      - lemp-stack
 
-
+networks:
+  lemp-stack:
+    driver: bridge
   
-volumes:
-  data:
 
 
